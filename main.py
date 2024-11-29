@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait as wd
 from selenium.webdriver.support import expected_conditions as EC
 import time
+def Autoscroll(dfjdjf)
 
 def DenAutoFill():
     driver = webdriver.Firefox()
