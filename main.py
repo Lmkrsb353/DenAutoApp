@@ -5,11 +5,21 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait as wd
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import TimeoutException
 import time
-def Autoscroll(dfjdjf)
+
+def AutoScroll(ActionChain, times, seconds):
+    for scroll in range(times):
+        if seconds == 0:
+            ActionChain.key_down(Keys.ARROW_DOWN).key_up(Keys.ARROW_UP).perform()
+        else:
+            ActionChain.key_down(Keys.ARROW_DOWN).pause(seconds).key_up(Keys.ARROW_UP).perform()
 
 def DenAutoFill():
-    driver = webdriver.Firefox()
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
     scroll_chains = ActionChains(driver=driver)
     driver.maximize_window()
     # Getting to gozdrav title page...
@@ -18,53 +28,62 @@ def DenAutoFill():
     signing = wd(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[1]/div[10]/div/div[4]/div[1]/a"))).click()
     
     # Using the 'scroll' option of very powerful ActionChains class to imitate scrolling via keyboard keys
-    for scroll1 in range(10):
-        scroll_chains.key_down(Keys.ARROW_DOWN).key_up(Keys.ARROW_UP).perform()
+    AutoScroll(scroll_chains, 10, 0)
     visuability_event = EC.visibility_of_element_located((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[1]/div[2]/div[1]/div/div[1]/ul/li[14]"))
-    #Selecting the "Petrodvortsoviy" distinct
+    #Selecting the "Petrodvortsoviy" doctor
     wd(driver, 5).until(visuability_event).click()
     # Another scroll...
-    for scroll2 in range(10):
-        scroll_chains.key_down(Keys.ARROW_DOWN).key_up(Keys.ARROW_UP).perform()
+    AutoScroll(scroll_chains, 10, 0)
     wd(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.service-mo-1:nth-child(7) > button:nth-child(3)"))).click()
-    #Scrolling down until an option of select a dentist pops up
-    for scroll2 in range(7):
-        scroll_chains.key_down(Keys.ARROW_DOWN).key_up(Keys.ARROW_UP).perform()
-    #wd(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[3]/div/div[1]/div[9]/button"))).click()
-  
-    #moving to dentis section
-    Xpath= "/html/body/div/div[1]/div[12]/div[3]/div[3]/div/div[1]/div[contains(@class, 'service-block-1 service-speciality')][//*[contains(text(), 'СТОМАТОЛОГ')]]//button[contains(@class,\
-     'button button--1 service-block-1__button service-speciality__button')]"
-    wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[3]/div/div[1]/div[@data-speciality-name='ИНФЕКЦИОНИСТ']/button"))).click()
-    
-    stomatolog_xPath = '//*[@id="doctorsOutput"]/div[1]/div[1][.//ul[contains(@class, "service-doctor-top__col service-doctor-top__list service-doctor-top__list_numbers")]]//div[contains(@class, "service-block-1__button") and text()="Выбрать"]'
+    # Scrolling down until an option of select a doctor pops up
+    AutoScroll(scroll_chains, 7, 0)
+    # moving on to the doctor section
+    wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[3]/div/div[1]/div[@data-speciality-name='СТОМАТОЛОГ']/button"))).click()
+    time.sleep(1)
+    # Xpath is being combined from very difficult conditions due to the neccesity of checking doctor's qualification
+    # And making sure that there are available tichets for sign to
+    stomatolog_xPath = '//*[@id="doctorsOutput"]/div[1]/div[1][.//div[contains(@class, "service-doctor__speciality") and contains(text(), "стоматолог-терапевт")] and .//ul[contains(@class, "service-doctor-top__col service-doctor-top__list service-doctor-top__list_numbers")]]//div[contains(@class, "service-block-1__button") and text()="Выбрать"]'
 
-    wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, stomatolog_xPath))).click()
+    """stomatolog_xPath1 = '//*[@id="doctorsOutput"]/div[1]/div[1][.//ul[contains(@class, "service-doctor-top__col service-doctor-top__list service-doctor-top__list_numbers")]]'
+    stomatolog_xPath2 = '//div[contains(@class, "service-block-1__button") and text()="Выбрать"]'
+    stomatolog_xPath3 = stomatolog_xPath1 + stomatolog_xPath2"""
+    AutoScroll(scroll_chains, 7, 0.2)
+    try:
+        wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, stomatolog_xPath))).click()
+        # Registr on  an appointment
+        wd(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "li.slots__item:nth-child(1)"))).click()
+        # Scrolling inside embedded window in browser is only available like this
+        driver.execute_script("window.scrollBy(0,250)")
+        # Doesn't have a clue for that...
+        wd(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.service-doctor:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > button:nth-child(2)"))).click()
+        l = ["Макаровский", "Лев", "Андреевич", "01.03.2006", "lev.makarovskiy@gmail.com", "9212405502"]
 
-    #Registr an appointment
-    wd(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "li.slots__item:nth-child(1)"))).click()
-    driver.execute_script("window.scrollBy(0,250)")
-    wd(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.service-doctor:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > button:nth-child(2)"))).click()
-    l = ["Макаровский", "Лев", "Андреевич", "01.03.2006", "lev.makarovskiy@gmail.com", "9212405502"]
-    for scroll2 in range(14):
-        scroll_chains.key_down(Keys.ARROW_DOWN).pause(0.1).key_up(Keys.ARROW_UP).perform()
-    for x in range(1, 7):
-        if x == 4:
-            continue
-        pole = wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, f"/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[2]/div[{x}]/input"))) 
-        pole.clear(); pole.send_keys(l[x-1])                                    
-        time.sleep(0.1)     
-           
-    pole = wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, f"/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[2]/div[{4}]/div/input")))   
-    scroll_chains.click(pole).pause(0.2).send_keys(l[3]).perform()
-    checkbox = wd(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[3]/label/div[1]")))
-    driver.execute_script("arguments[0].click();", checkbox)
-    wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[3]/button"))).click()
-    for scroll in range(15):
-        scroll_chains.key_down(Keys.ARROW_DOWN).pause(0.1).key_up(Keys.ARROW_UP).perform()
-    checkbox2 = wd(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[7]/div/div[3]/label/div[1]")))
-    driver.execute_script("arguments[0].click();", checkbox2)
-    wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="setAppointmentButton"]'))).click()
+        AutoScroll(scroll_chains, 14, 0.1)
+        # The following 'for' loop executes insetion into data field one after another
+        for x in range(1, 7):
+            if x == 4:
+                continue
+            pole = wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, f"/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[2]/div[{x}]/input"))) 
+            pole.clear()
+            scroll_chains.click(pole).pause(0.1).send_keys(l[x-1]).pause(0.1).perform()
+
+        # a pole has diverse absoly com path so it need to be processed separately       
+        extra_pole = wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, f"/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[2]/div[{4}]/div/input")))   
+        scroll_chains.click(extra_pole).pause(0.2).send_keys(l[3]).perform()
+        # Selecting in a checkbox as we agree
+        checkbox = wd(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[3]/label/div[1]")))
+        driver.execute_script("arguments[0].click();", checkbox)
+        # Confirmation
+        wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[6]/div/form/div[3]/button"))).click()
+        AutoScroll(scroll_chains, 15, 0.1)
+        # Same series of actions
+        checkbox2 = wd(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div[1]/div[12]/div[3]/div[7]/div/div[3]/label/div[1]")))
+        driver.execute_script("arguments[0].click();", checkbox2)
+        wd(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="setAppointmentButton"]'))).click()
+    except TimeoutException:
+        print(TimeoutException)
+    finally:
+        driver.close()
 def main():
     DenAutoFill()                                                   
                                                                                 
