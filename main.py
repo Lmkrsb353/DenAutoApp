@@ -17,11 +17,15 @@ def AutoScroll(ActionChain, times, seconds):
             ActionChain.key_down(Keys.ARROW_DOWN).pause(seconds).key_up(Keys.ARROW_UP).perform()
 
 def DenAutoFill():
-    options = Options()
+    options = webdriver.FirefoxOptions()
     options.headless = True
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--start-maximized')
     driver = webdriver.Firefox(options=options)
     scroll_chains = ActionChains(driver=driver)
-    driver.maximize_window()
     # Getting to gozdrav title page...
     driver.get("https://gorzdrav.spb.ru/")
     # Pressing the "Запись к врачу" button..
@@ -43,7 +47,6 @@ def DenAutoFill():
     # Xpath is being combined from very difficult conditions due to the neccesity of checking doctor's qualification
     # And making sure that there are available tichets for sign to
     stomatolog_xPath = '//*[@id="doctorsOutput"]/div[1]/div[1][.//div[contains(@class, "service-doctor__speciality") and contains(text(), "стоматолог-терапевт")] and .//ul[contains(@class, "service-doctor-top__col service-doctor-top__list service-doctor-top__list_numbers")]]//div[contains(@class, "service-block-1__button") and text()="Выбрать"]'
-
     """stomatolog_xPath1 = '//*[@id="doctorsOutput"]/div[1]/div[1][.//ul[contains(@class, "service-doctor-top__col service-doctor-top__list service-doctor-top__list_numbers")]]'
     stomatolog_xPath2 = '//div[contains(@class, "service-block-1__button") and text()="Выбрать"]'
     stomatolog_xPath3 = stomatolog_xPath1 + stomatolog_xPath2"""
@@ -83,7 +86,9 @@ def DenAutoFill():
     except TimeoutException:
         print(TimeoutException)
     finally:
+        driver.quit()
         driver.close()
+
 def main():
     DenAutoFill()                                                   
                                                                                 
